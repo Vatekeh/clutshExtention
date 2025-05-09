@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
   const loginButton = document.getElementById('login');
-  const supportButton = document.getElementById('open-support');
   const authSection = document.getElementById('auth-section');
   const privacyLink = document.getElementById('privacy-link');
   
@@ -64,27 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     } catch (err) {
       console.error('Error handling auth action:', err);
-    }
-  });
-  
-  // Support room button handler
-  supportButton.addEventListener('click', () => {
-    try {
-      chrome.storage.local.get(['clutshToken', 'currentUserId'], (result) => {
-        const { clutshToken, currentUserId } = result;
-        
-        if (clutshToken && currentUserId) {
-          // User is authenticated, open support room
-          chrome.tabs.create({ 
-            url: 'https://clutsh.live/support-room' 
-          });
-        } else {
-          // User not authenticated, show alert or redirect to auth
-          alert('Please sign in to join a support room');
-        }
-      });
-    } catch (err) {
-      console.error('Error opening support room:', err);
     }
   });
   
