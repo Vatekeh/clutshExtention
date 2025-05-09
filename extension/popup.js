@@ -4,6 +4,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const authSection = document.getElementById('auth-section');
   const privacyLink = document.getElementById('privacy-link');
   
+  const settingsIds = {
+    immediateScan: document.getElementById('immediate-scan'),
+    enableEdging: document.getElementById('enable-edging'),
+    dwellSeconds: document.getElementById('dwell-seconds')
+  };
+
+  const DEFAULT_SETTINGS = {
+    immediateScan: true,
+    enableEdging: true,
+    dwellSeconds: 300
+  };
+
   // Check if user is already logged in
   chrome.storage.local.get(['clutshToken', 'currentUserId'], (result) => {
     try {
@@ -23,6 +35,14 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error('Error checking auth status:', err);
     }
+  });
+  
+  // Load settings into UI
+  chrome.storage.local.get(['clutshSettings'], (res) => {
+    const s = { ...DEFAULT_SETTINGS, ...(res.clutshSettings || {}) };
+    settingsIds.immediateScan.checked = s.immediateScan;
+    settingsIds.enableEdging.checked = s.enableEdging;
+    settingsIds.dwellSeconds.value = s.dwellSeconds;
   });
   
   // Login/Logout button handler
@@ -73,6 +93,18 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     chrome.tabs.create({ 
       url: 'https://clutsh.live/privacy' 
+    });
+  });
+
+  // Save handler
+  document.getElementById('save-settings').addEventListener('click', () => {
+    const newSettings = {
+      immediateScan: settingsIds.immediateScan.checked,
+      enableEdging: settingsIds.enableEdging.checked,
+      dwellSeconds: parseInt(settingsIds.dwellSeconds.value, 10) || 300
+    };
+    chrome.storage.local.set({ clutshSettings: newSettings }, () => {
+      alert('Settings saved!');
     });
   });
 });

@@ -90,6 +90,21 @@
       <button id="login" class="button">Sign in to Clutsh</button>
     </div>
     
+    <div id="settings-section">
+      <h3 style="margin:0 0 4px 0;font-size:14px;">Settings</h3>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;">
+        <input type="checkbox" id="immediate-scan" /> Immediate keyword scan
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;">
+        <input type="checkbox" id="enable-edging" /> Behavioral (edging) detection
+      </label>
+      <label style="display:flex;flex-direction:column;font-size:12px;margin-top:4px;">
+        Dwell seconds threshold
+        <input type="number" id="dwell-seconds" min="30" max="1800" step="30" style="width:100%;padding:4px;" />
+      </label>
+      <button id="save-settings" class="button secondary" style="margin-top:8px;">Save Settings</button>
+    </div>
+    
     <div class="divider"></div>
     
     <div>

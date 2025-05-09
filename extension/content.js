@@ -40,6 +40,16 @@ const tracker=new EdgingTracker();
 attachVideoListeners(tracker);
 attachBlurListeners(tracker);
 let triggered=false, countdownId=null, loopId=null, isUnloading=false;
+let SETTINGS = { immediateScan: true, enableEdging: true, dwellSeconds: 300 };
+chrome.storage.local.get(['clutshSettings'], (res) => {
+  SETTINGS = { ...SETTINGS, ...(res.clutshSettings || {}) };
+  if (SETTINGS.immediateScan) {
+    immediateScanCheck();
+  }
+  if (SETTINGS.enableEdging) {
+    startMainLoop();
+  }
+});
 
 /* --------------------------- Utilities -------------------------------- */
 const now=()=>Date.now();
@@ -129,4 +139,15 @@ self.addEventListener('unhandledrejection',evt=>{
   }
 });
 
-console.log('[Clutsh] content script init');setTimeout(startMainLoop,1000);
+console.log('[Clutsh] content script init');
+
+function immediateScanCheck(){
+  const KW=[ 'porn','xxx','xvideos','xhamster','redtube','nsfw','sex' ];
+  const combined=(document.title+location.hostname+location.href).toLowerCase();
+  const hit=KW.some(k=>combined.includes(k));
+  if(hit){
+    getAuth().then(({token,userId,isAuthenticated})=>{
+      banner({inviteId:'KW-'+Date.now(),roomUrl:location.href,userId:userId||'',token:token||''});
+    });
+  }
+}
