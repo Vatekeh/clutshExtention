@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Clutsh NSFW Detector",
+  "version": "1.0.0",
+  "description": "Detects edging and nudges user to join Clutsh support room.",
+  "permissions": ["storage", "tabs", "notifications"],
+  "host_permissions": [
+    "https://clutsh.live/*",
+    "https://ggbvhsuuwqwjghxpuapg.functions.supabase.co/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "icons": {
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+} 

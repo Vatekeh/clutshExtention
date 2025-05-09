@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Clutsh NSFW Monitor</title>
+  <style>
+    body {
+      width: 300px;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #333;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .logo {
+      width: 32px;
+      height: 32px;
+    }
+    .title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+    }
+    .status {
+      padding: 12px;
+      border-radius: 6px;
+      background-color: #f3f4f6;
+    }
+    .status.active {
+      background-color: #ecfdf5;
+      border-left: 4px solid #00c37a;
+    }
+    .status-text {
+      margin: 0;
+      padding: 0;
+      font-weight: 500;
+    }
+    .button {
+      background-color: #00c37a;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+    }
+    .button:hover {
+      background-color: #009d62;
+    }
+    .button.secondary {
+      background-color: #f3f4f6;
+      color: #374151;
+    }
+    .button.secondary:hover {
+      background-color: #e5e7eb;
+    }
+    .divider {
+      height: 1px;
+      background-color: #e5e7eb;
+      margin: 8px 0;
+    }
+    .footer {
+      font-size: 12px;
+      color: #6b7280;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="icon48.png" alt="Clutsh Logo" class="logo">
+      <h1 class="title">Clutsh NSFW Monitor</h1>
+    </div>
+    
+    <div class="status active">
+      <p class="status-text">✅ Extension is active and monitoring</p>
+    </div>
+    
+    <div id="auth-section">
+      <button id="login" class="button">Sign in to Clutsh</button>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <div>
+      <button id="open-support" class="button secondary">Join Support Room Now</button>
+    </div>
+    
+    <p class="footer">Version 1.0.0 • <a href="#" id="privacy-link">Privacy Policy</a></p>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html> 
