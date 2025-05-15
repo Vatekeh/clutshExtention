@@ -29,8 +29,9 @@ const attachBlurListeners=(t)=>{window.addEventListener('blur',()=>t.recordBlurT
 /* ----------------------------- Constants ------------------------------ */
 const API_BASE='https://clutsh.live';
 const FALLBACK_API_BASE='https://ggbvhsuuwqwjghxpuapg.functions.supabase.co';
-const ON_EDGING_ENDPOINT='/onEdgingDetected';
-const JOIN_INVITE_ENDPOINT='/joinInvite';
+const ON_EDGING_ENDPOINT='/api/onEdgingDetected';
+const JOIN_INVITE_ENDPOINT='/api/joinInvite';
+const DETECTION_LOG_ENDPOINT='/api/detections';
 const SUPPRESS_MS=10*60*1000;
 const CHECK_MS=15*1000;
 const COUNTDOWN=60;
@@ -121,6 +122,15 @@ function startMainLoop(){
         try{
           const inv=await post(ON_EDGING_ENDPOINT,{userId},token);
           safeChromeCall(()=> chrome.storage.local.set({lastNudgeTs:now()}));
+          const logPayload = {
+            eventType: 'edging',
+            inviteId: inv.inviteId,
+            roomUrl: inv.roomUrl,
+            userId: userId,
+            token: token,
+          };
+          safeChromeCall(() => chrome.runtime.sendMessage({ type: 'ADD_DETECTION_LOG', payload: logPayload }));
+          post(DETECTION_LOG_ENDPOINT, { logs: [logPayload], userId }, token).catch(()=>{});
           banner({inviteId:inv.inviteId,roomUrl:inv.roomUrl,userId,token});
         }catch(e){console.error('[Clutsh] onEdging err',e);}
       });
@@ -142,12 +152,36 @@ self.addEventListener('unhandledrejection',evt=>{
 console.log('[Clutsh] content script init');
 
 function immediateScanCheck(){
-  const KW=[ 'porn','xxx','xvideos','xhamster','redtube','nsfw','sex' ];
-  const combined=(document.title+location.hostname+location.href).toLowerCase();
-  const hit=KW.some(k=>combined.includes(k));
-  if(hit){
-    getAuth().then(({token,userId,isAuthenticated})=>{
-      banner({inviteId:'KW-'+Date.now(),roomUrl:location.href,userId:userId||'',token:token||''});
+  const keywords = ['porn','xxx','xvideos','xhamster','redtube','nsfw','sex'];
+  const sources = [
+    {name: 'title', text: document.title},
+    {name: 'url', text: location.href},
+    {name: 'body', text: document.body.innerText},
+  ];
+  const results = [];
+  sources.forEach(source => {
+    keywords.forEach(kw => {
+      const regex = new RegExp(`\\b${kw}\\b`, 'gi');
+      let match;
+      while ((match = regex.exec(source.text)) !== null) {
+        const idx = match.index;
+        const snippet = source.text.slice(Math.max(0, idx - 30), idx + kw.length + 30);
+        results.push({keyword: kw, source: source.name, snippet});
+      }
+    });
+  });
+  if (results.length > 0) {
+    console.log('[Clutsh] Keyword detection results:', results);
+    getAuth().then(({token, userId, isAuthenticated}) => {
+      if (!isAuthenticated) return;
+      const logPayload = {
+        eventType: 'keyword',
+        keywordResults: results,
+        pageUrl: location.href,
+      };
+      safeChromeCall(() => chrome.runtime.sendMessage({ type: 'ADD_DETECTION_LOG', payload: logPayload }));
+      post(DETECTION_LOG_ENDPOINT, { logs: [logPayload], userId }, token).catch(()=>{});
+      banner({inviteId: 'KW-' + Date.now(), roomUrl: location.href, userId: userId || '', token: token || ''});
     });
   }
 }

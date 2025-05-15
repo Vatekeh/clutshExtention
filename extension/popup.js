@@ -30,6 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
         userInfo.style.fontSize = '12px';
         userInfo.style.margin = '4px 0 0 0';
         authSection.appendChild(userInfo);
+
+        // If authenticated, fetch remote logs
+        loadRemoteHistory(clutshToken);
+      } else {
+        renderLocalHistory();
       }
     } catch (err) {
       console.error('Error checking auth status:', err);
@@ -58,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
           });
         } else {
           // Sign in - open auth page
-          chrome.tabs.create({ url: 'https://clutsh.live/auth' });
+          chrome.tabs.create({ url: 'https://ggbvhsuuwqwjghxpuapg.functions.supabase.co/auth' });
         }
       });
     } catch (err) {
@@ -73,6 +78,69 @@ document.addEventListener('DOMContentLoaded', () => {
       url: 'https://clutsh.live/privacy' 
     });
   });
+
+  function renderLocalHistory() {
+    chrome.storage.local.get(['detectionLogs'], (res) => {
+      const logs = res.detectionLogs || [];
+      if (logs.length === 0) return;
+      renderHistorySection(logs.map(l=>({
+        ts:l.ts,
+        event_type:l.eventType,
+        page_url:l.pageUrl
+      })));
+    });
+  }
+
+  function loadRemoteHistory(token) {
+    const API_BASE = 'https://ggbvhsuuwqwjghxpuapg.functions.supabase.co';
+    fetch(`${API_BASE}/api/detections?limit=20`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(r=>r.ok?r.json():Promise.reject())
+    .then(data=>{
+      if(data && data.logs) {
+        renderHistorySection(data.logs);
+      } else {
+        renderLocalHistory();
+      }
+    })
+    .catch(()=>{
+      // fallback to local if remote fails
+      renderLocalHistory();
+    });
+  }
+
+  function renderHistorySection(logs) {
+    const historySection = document.createElement('div');
+    historySection.style.marginTop = '12px';
+
+    const h3 = document.createElement('h3');
+    h3.textContent = 'Detection History';
+    h3.style.margin = '0 0 4px 0';
+    h3.style.fontSize = '14px';
+    historySection.appendChild(h3);
+
+    const list = document.createElement('ul');
+    list.style.listStyle = 'none';
+    list.style.padding = '0';
+    list.style.margin = '0';
+
+    logs.slice(0, 10).forEach((log) => {
+      const li = document.createElement('li');
+      li.style.fontSize = '12px';
+      li.style.marginBottom = '4px';
+      const date = new Date(log.detected_at || log.ts).toLocaleString();
+      const eventType = log.event_type || log.eventType;
+      const domain = (log.page_url || '').replace(/^https?:\/\//,'').split('/')[0];
+      li.textContent = `[${date}] ${eventType}${domain?` – ${domain}`:''}`;
+      list.appendChild(li);
+    });
+
+    historySection.appendChild(list);
+    document.querySelector('.container').appendChild(historySection);
+  }
 
   // Save handler
   document.getElementById('save-settings').addEventListener('click', () => {

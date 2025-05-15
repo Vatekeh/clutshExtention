@@ -1,5 +1,5 @@
 // Constants
-const AUTH_URL_PATTERN = 'https://clutsh.live/auth/callback*';
+const AUTH_URL_PATTERN = 'https://ggbvhsuuwqwjghxpuapg.functions.supabase.co/auth/callback*';
 
 // Check for auth redirects and extract token + user ID
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
@@ -51,8 +51,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     
     if (message.type === 'OPEN_SUPPORT_ROOM') {
       chrome.tabs.create({ 
-        url: message.roomUrl || 'https://clutsh.live/support-room'
+        url: message.roomUrl || 'https://ggbvhsuuwqwjghxpuapg.functions.supabase.co/support-room'
       });
+    }
+    
+    // ADD_DETECTION_LOG: persist detection events in local storage (FIFO, max 50)
+    if (message.type === 'ADD_DETECTION_LOG') {
+       chrome.storage.local.get(['detectionLogs'], (res) => {
+         const logs = res.detectionLogs || [];
+         logs.unshift({
+           ...message.payload,
+           ts: Date.now(),
+         });
+         if (logs.length > 50) logs.length = 50; // keep max 50
+         chrome.storage.local.set({ detectionLogs: logs }, () => {
+           sendResponse({ ok: true });
+         });
+       });
+       return true; // keep channel open for async sendResponse
     }
   } catch (err) {
     console.error('[Clutsh] Message handler error:', err);

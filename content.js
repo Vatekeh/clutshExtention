@@ -76,8 +76,8 @@ const attachBlurListeners=(t)=>{
 /* ----------------------------- Constants ------------------------------ */
 const API_BASE='https://clutsh.live';
 const FALLBACK_API_BASE='https://ggbvhsuuwqwjghxpuapg.functions.supabase.co';
-const ON_EDGING_ENDPOINT='/onEdgingDetected';
-const JOIN_INVITE_ENDPOINT='/joinInvite';
+const ON_EDGING_ENDPOINT='/api/onEdgingDetected';
+const JOIN_INVITE_ENDPOINT='/api/joinInvite';
 const SUPPRESS_MS=10*60*1000;
 const CHECK_MS=15*1000;
 const COUNTDOWN=60;
